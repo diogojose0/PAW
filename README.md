@@ -26,3 +26,15 @@ Backend application for a supermarket marketplace developed as an academic web d
 
 ```text
 BackOffice/
+```
+## Running Locally
+
+```bash
+cd BackOffice
+npm install
+npm start
+```
+
+The application requires environment variables for database credentials, authentication secrets and external services.
+
+Sensitive credentials are not included in this repository.
