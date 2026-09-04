@@ -1,0 +1,4 @@
+.login-error {
+  z-index: 9999;
+  min-width: 300px;
+}

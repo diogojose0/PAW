@@ -1,0 +1,74 @@
+<%- include('../partials/header', { title: title }) %>
+
+<h1 class="mb-4">My Deliveries</h1>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Order</th>
+        <th>Supermarket</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Accepted At</th>
+        <th>Delivered At</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!deliveries || deliveries.length === 0) { %>
+        <tr>
+          <td colspan="7" class="text-center">You do not have deliveries yet.</td>
+        </tr>
+      <% } %>
+
+      <% deliveries.forEach((delivery) => { %>
+        <tr>
+          <td><%= delivery.orderId?._id || '-' %></td>
+          <td><%= delivery.orderId?.supermarketId?.name || '-' %></td>
+          <td><%= Number(delivery.orderId?.finalTotal || 0).toFixed(2) %> €</td>
+          <td>
+            <span class="badge <%= delivery.status === 'delivered' ? 'bg-success' : 'bg-warning text-dark' %>">
+              <%= delivery.status %>
+            </span>
+          </td>
+          <td><%= delivery.acceptedAt ? new Date(delivery.acceptedAt).toLocaleString('pt-PT') : '-' %></td>
+          <td><%= delivery.deliveredAt ? new Date(delivery.deliveredAt).toLocaleString('pt-PT') : '-' %></td>
+          <td>
+            <div class="d-flex gap-2 flex-wrap">
+              <a
+                href="/courier/deliveries/my/<%= delivery._id %>"
+                class="btn btn-info btn-sm"
+              >
+                View Details
+              </a>
+
+              <% if (delivery.status === "accepted") { %>
+                <form method="POST" action="/courier/deliveries/<%= delivery._id %>/update-status">
+                  <button type="submit" class="btn btn-sm btn-primary">
+                    Mark as picked up
+                  </button>
+                </form>
+              <% } else if (delivery.status === "picked_up") { %>
+                <form method="POST" action="/courier/deliveries/<%= delivery._id %>/update-status">
+                  <button type="submit" class="btn btn-sm btn-success">
+                    Mark as delivered
+                  </button>
+                </form>
+              <% } else { %>
+                <span class="text-muted">No action</span>
+              <% } %>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<div class="d-flex gap-2">
+  <a href="/courier" class="btn btn-secondary">Back</a>
+  <a href="/courier/deliveries/available" class="btn btn-warning">Available Deliveries</a>
+</div>
+
+<%- include('../partials/footer') %>

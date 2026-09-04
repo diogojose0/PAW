@@ -1,0 +1,216 @@
+<%- include('../partials/header', { title: title }) %>
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+>
+
+<h1 class="mb-4">Delivery Detail</h1>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="mb-3">Delivery</h4>
+
+        <p><strong>Delivery ID:</strong> <%= delivery._id %></p>
+        <p>
+          <strong>Status:</strong>
+          <span class="badge <%= delivery.status === 'delivered' ? 'bg-success' : (delivery.status === 'available' ? 'bg-secondary' : 'bg-warning text-dark') %>">
+            <%= delivery.status %>
+          </span>
+        </p>
+        <p><strong>Accepted At:</strong> <%= delivery.acceptedAt ? new Date(delivery.acceptedAt).toLocaleString('pt-PT') : '-' %></p>
+        <p><strong>Delivered At:</strong> <%= delivery.deliveredAt ? new Date(delivery.deliveredAt).toLocaleString('pt-PT') : '-' %></p>
+
+        <hr>
+
+        <h5 class="mb-3">Courier</h5>
+
+        <div class="alert alert-success border-success">
+          <div class="small text-uppercase fw-semibold">Courier earning for this delivery</div>
+          <div class="display-6 mb-1">
+            <%= Number(order.deliveryCost || order.supermarketId?.deliveryCosts?.courier || 0).toFixed(2) %> €
+          </div>
+          <div class="small text-muted mb-0">
+            Amount defined for courier delivery in this order.
+          </div>
+        </div>
+
+        <% if (delivery.courierUserId) { %>
+          <p><strong>Name:</strong> <%= delivery.courierUserId.name || '-' %></p>
+          <p><strong>Email:</strong> <%= delivery.courierUserId.email || '-' %></p>
+          <p><strong>Phone:</strong> <%= delivery.courierUserId.phone || '-' %></p>
+        <% } else { %>
+          <p class="text-muted mb-0">No courier assigned yet.</p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="mb-3">Customer</h4>
+
+        <p><strong>Name:</strong> <%= order.clientUserId?.name || '-' %></p>
+        <p><strong>Email:</strong> <%= order.clientUserId?.email || '-' %></p>
+        <p><strong>Phone:</strong> <%= order.clientUserId?.phone || '-' %></p>
+        <p><strong>Address:</strong> <%= order.clientUserId?.address || '-' %></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="mb-3">Order</h4>
+
+        <p><strong>Order ID:</strong> <%= order._id %></p>
+        <p><strong>Status:</strong> <%= order.status %></p>
+        <p><strong>Delivery Method:</strong> <%= order.deliveryMethod %></p>
+        <p><strong>Items Total:</strong> <%= Number(order.itemsTotal || 0).toFixed(2) %> €</p>
+        <p><strong>Delivery Cost:</strong> <%= Number(order.deliveryCost || 0).toFixed(2) %> €</p>
+        <p class="mb-0"><strong>Final Total:</strong> <%= Number(order.finalTotal || 0).toFixed(2) %> €</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="mb-3">Supermarket</h4>
+
+        <p><strong>Name:</strong> <%= order.supermarketId?.name || '-' %></p>
+        <p><strong>Location:</strong> <%= order.supermarketId?.location || '-' %></p>
+        <p><strong>Opening Hours:</strong> <%= order.supermarketId?.openingHours || '-' %></p>
+        <p class="mb-0">
+          <strong>Courier Price:</strong>
+          <%= Number(order.supermarketId?.deliveryCosts?.courier || order.deliveryCost || 0).toFixed(2) %> €
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <div>
+            <h4 class="mb-1">Delivery Map</h4>
+            <div class="text-muted small">
+              Customer destination and supermarket pickup point
+            </div>
+          </div>
+          <span class="badge text-bg-secondary" id="deliveryMapStatus">Waiting for map data</span>
+        </div>
+
+        <div
+          id="courierDeliveryMap"
+          style="height: 400px; border-radius: 12px; overflow: hidden;"
+        ></div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-6">
+            <div class="border rounded p-3 bg-light h-100">
+              <div class="fw-semibold mb-1">Customer address</div>
+              <div class="small text-muted">
+                <%= order.clientUserId?.address || '-' %>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="border rounded p-3 bg-light h-100">
+              <div class="fw-semibold mb-1">Supermarket location</div>
+              <div class="small text-muted">
+                <%= order.supermarketId?.location || '-' %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="mb-3">Order Items</h4>
+
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Unit Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!order.items || order.items.length === 0) { %>
+                <tr>
+                  <td colspan="4" class="text-center">No items found.</td>
+                </tr>
+              <% } %>
+
+              <% order.items.forEach((item) => { %>
+                <tr>
+                  <td><%= item.nameSnapshot %></td>
+                  <td><%= Number(item.priceSnapshot || 0).toFixed(2) %> €</td>
+                  <td><%= item.quantity %></td>
+                  <td><%= Number(item.subtotal || 0).toFixed(2) %> €</td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex gap-2 mt-4 flex-wrap">
+  <a href="/courier/deliveries/available" class="btn btn-warning">Available Deliveries</a>
+  <a href="/courier/deliveries/my" class="btn btn-dark">My Deliveries</a>
+  <a href="/courier" class="btn btn-secondary">Back</a>
+
+  <% if (delivery.status === 'available' && !delivery.courierUserId) { %>
+    <form method="POST" action="/courier/deliveries/<%= delivery._id %>/accept">
+      <button type="submit" class="btn btn-success">Accept Delivery</button>
+    </form>
+  <% } else if (delivery.status === 'accepted') { %>
+    <form method="POST" action="/courier/deliveries/<%= delivery._id %>/update-status">
+      <button type="submit" class="btn btn-primary">Mark as picked up</button>
+    </form>
+  <% } else if (delivery.status === 'picked_up') { %>
+    <form method="POST" action="/courier/deliveries/<%= delivery._id %>/update-status">
+      <button type="submit" class="btn btn-success">Mark as delivered</button>
+    </form>
+  <% } %>
+</div>
+
+<script type="application/json" id="courierDeliveryMapData">
+  <%- JSON.stringify({
+    customer: {
+      name: order.clientUserId?.name || "",
+      address: order.clientUserId?.address || "",
+    },
+    supermarket: {
+      name: order.supermarketId?.name || "",
+      location: order.supermarketId?.location || "",
+    },
+  }) %>
+</script>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+<script src="/javascripts/courier-delivery-map.js"></script>
+
+<%- include('../partials/footer') %>

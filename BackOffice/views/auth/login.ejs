@@ -1,0 +1,44 @@
+<%- include('../partials/header', { title: 'Login' }) %>
+
+<%- include('../error') %>
+
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h3 mb-3">Login</h1>
+
+        <form method="POST" action="/auth/login">
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input
+              class="form-control"
+              type="email"
+              name="email"
+              value="<%= formData?.email || '' %>"
+              required
+            >
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" name="password" required>
+          </div>
+
+          <button class="btn btn-primary w-100" type="submit">Enter</button>
+        </form>
+
+        <hr>
+
+        <p class="mb-0">
+          Don't you have an account?
+          <a href="/auth/register">Register</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/javascripts/error-script.js"></script>
+
+<%- include('../partials/footer') %>

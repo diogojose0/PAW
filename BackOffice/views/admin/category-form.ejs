@@ -1,0 +1,52 @@
+<%- include('../partials/header', { title: title }) %>
+
+<%- include('../error') %>
+
+<h1 class="mb-4"><%= category ? 'Edit Category' : 'New Category' %></h1>
+
+<form
+  method="POST"
+  action="<%= category ? '/admin/categories/' + category._id + '/edit' : '/admin/categories/new' %>"
+  class="row g-3"
+>
+  <div class="col-12">
+    <label class="form-label">Name</label>
+    <input
+      class="form-control"
+      name="name"
+      value="<%= category?.name || '' %>"
+      required
+    >
+  </div>
+
+  <div class="col-12">
+    <label class="form-label">Description</label>
+    <textarea
+      class="form-control"
+      name="description"
+      rows="3"
+    ><%= category?.description || '' %></textarea>
+  </div>
+
+  <div class="col-12">
+    <div class="form-check">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="active"
+        name="active"
+        <%= category ? (category.active ? 'checked' : '') : 'checked' %>
+      >
+      <label class="form-check-label" for="active">
+        Active
+      </label>
+    </div>
+  </div>
+
+  <div class="col-12 d-flex gap-2">
+    <button class="btn btn-success" type="submit">Save</button>
+    <a class="btn btn-secondary" href="/admin/categories">Back</a>
+  </div>
+</form>
+
+<%- include('../partials/footer') %>

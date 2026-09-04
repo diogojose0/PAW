@@ -1,0 +1,58 @@
+<%- include('../partials/header', { title: title }) %>
+
+<h1 class="mb-4">Categories</h1>
+
+<div class="mb-3">
+  <a href="/admin/categories/new" class="btn btn-success">New Category</a>
+  <a href="/admin" class="btn btn-secondary">Back</a>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Slug</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!categories || categories.length === 0) { %>
+        <tr>
+          <td colspan="5" class="text-center">No categories found.</td>
+        </tr>
+      <% } %>
+
+      <% categories.forEach((category) => { %>
+        <tr>
+          <td><%= category.name %></td>
+          <td><%= category.description || '-' %></td>
+          <td>
+            <span class="badge <%= category.active ? 'bg-success' : 'bg-danger' %>">
+              <%= category.active ? 'Active' : 'Inactive' %>
+            </span>
+          </td>
+          <td><code><%= category.slug %></code></td>
+          <td>
+            <div class="d-flex gap-2 flex-wrap">
+              <a href="/admin/categories/<%= category._id %>/edit" class="btn btn-sm btn-warning">Edit</a>
+
+              <form method="POST" action="/admin/categories/<%= category._id %>/toggle-active">
+                <button
+                  class="btn btn-sm <%= category.active ? 'btn-danger' : 'btn-success' %>"
+                  type="submit"
+                >
+                  <%= category.active ? 'Disable' : 'Enable' %>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<%- include('../partials/footer') %>

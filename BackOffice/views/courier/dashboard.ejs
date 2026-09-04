@@ -1,0 +1,297 @@
+<%- include('../partials/header', { title: title }) %>
+
+<%
+  const safeStats = stats || {};
+  const safeMyDeliveriesByStatus = myDeliveriesByStatus || {};
+  const safeTopSupermarkets = Array.isArray(topSupermarkets) ? topSupermarkets : [];
+  const safeRecentDeliveries = Array.isArray(recentDeliveries) ? recentDeliveries : [];
+  const safeRecentReviews = Array.isArray(recentReviews) ? recentReviews : [];
+  const safeReviewStats = reviewStats || { averageRating: 0, reviewCount: 0 };
+%>
+
+<div class="row g-4 align-items-start">
+  <div class="col-lg-3">
+    <%- include('../partials/dashboard-sidebar', {
+      sidebarTitle: 'Courier Panel',
+      sidebarLinks: [
+        { label: 'Dashboard', href: '/courier' },
+        { label: 'Available Deliveries', href: '/courier/deliveries/available', badge: safeStats.availableCount || 0 },
+        { label: 'My Deliveries', href: '/courier/deliveries/my', badge: safeStats.myCount || 0 }
+      ]
+    }) %>
+  </div>
+
+  <div class="col-lg-9">
+    <h1 class="mb-4">Courier Dashboard</h1>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6 col-xl">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5>Available</h5>
+            <p class="display-6 mb-0"><%= safeStats.availableCount || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-xl">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5>My Deliveries</h5>
+            <p class="display-6 mb-0"><%= safeStats.myCount || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-xl">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5>Active</h5>
+            <p class="display-6 mb-0"><%= safeStats.activeCount || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-xl">
+        <div class="card shadow-sm border-success h-100">
+          <div class="card-body">
+            <h5>Delivered</h5>
+            <p class="display-6 mb-0"><%= safeStats.deliveredCount || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-xl">
+        <div class="card shadow-sm border-success h-100">
+          <div class="card-body">
+            <h5>Total Earnings</h5>
+            <p class="display-6 mb-0"><%= Number(safeStats.totalEarnings || 0).toFixed(2) %> €</p>
+            <small class="text-muted">
+              Delivered orders: <%= safeStats.deliveredOrdersCount || 0 %>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-warning">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div>
+            <h5 class="mb-1">Courier rating</h5>
+            <p class="text-muted mb-0">
+              Average rating from delivered order reviews.
+            </p>
+          </div>
+
+          <div class="text-end">
+            <% if (safeReviewStats.reviewCount > 0) { %>
+              <div class="display-6 fw-bold text-warning">
+                <%= Number(safeReviewStats.averageRating || 0).toFixed(1) %>/5
+              </div>
+              <small class="text-muted">
+                <%= safeReviewStats.reviewCount %> review(s)
+              </small>
+            <% } else { %>
+              <div class="fs-5 text-muted">No reviews yet</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="mb-3">Latest courier reviews</h5>
+
+        <% if (safeRecentReviews.length === 0) { %>
+          <p class="text-muted mb-0">No courier reviews received yet.</p>
+        <% } %>
+
+        <% safeRecentReviews.forEach((review) => { %>
+          <div class="border-bottom pb-3 mb-3">
+            <div class="d-flex justify-content-between gap-3">
+              <div>
+                <strong>
+                  <%= review.clientUserId && review.clientUserId.name ? review.clientUserId.name : 'Client' %>
+                </strong>
+
+                <div class="text-muted small">
+                  Supermarket:
+                  <%= review.supermarketId && review.supermarketId.name ? review.supermarketId.name : '-' %>
+                </div>
+
+                <div class="text-warning small">
+                  <%= '★'.repeat(review.courierRating || 0) %><%= '☆'.repeat(5 - (review.courierRating || 0)) %>
+                </div>
+              </div>
+
+              <small class="text-muted">
+                <%= review.createdAt ? new Date(review.createdAt).toLocaleDateString('pt-PT') : '-' %>
+              </small>
+            </div>
+
+            <% if (review.courierComment) { %>
+              <p class="text-muted mb-0 mt-2">
+                <%= review.courierComment %>
+              </p>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="mb-3">My delivery statuses</h5>
+
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="border rounded p-3">
+                  <div class="text-muted small">Accepted</div>
+                  <div class="fs-4 fw-bold"><%= safeMyDeliveriesByStatus.accepted || 0 %></div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="border rounded p-3">
+                  <div class="text-muted small">Picked Up</div>
+                  <div class="fs-4 fw-bold"><%= safeMyDeliveriesByStatus.picked_up || 0 %></div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="border rounded p-3 bg-light">
+                  <div class="text-muted small">Delivered</div>
+                  <div class="fs-4 fw-bold text-success"><%= safeMyDeliveriesByStatus.delivered || 0 %></div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="border rounded p-3 bg-light">
+                  <div class="text-muted small">Available</div>
+                  <div class="fs-4 fw-bold"><%= safeMyDeliveriesByStatus.available || 0 %></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="mb-3">Supermarkets with most deliveries</h5>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Supermarket</th>
+                    <th>Delivered Orders</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (safeTopSupermarkets.length === 0) { %>
+                    <tr>
+                      <td colspan="2" class="text-center">No delivered orders yet.</td>
+                    </tr>
+                  <% } %>
+
+                  <% safeTopSupermarkets.forEach((item) => { %>
+                    <tr>
+                      <td><%= item.supermarketName %></td>
+                      <td><%= item.deliveries %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="mb-3">My deliveries chart</h5>
+            <div id="courierDeliveriesStatusChart" style="height: 320px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="mb-3">Top supermarkets chart</h5>
+            <div id="courierTopSupermarketsChart" style="height: 320px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-4">
+      <div class="card-body">
+        <h5 class="mb-3">Recent deliveries</h5>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Delivery</th>
+                <th>Order</th>
+                <th>Client</th>
+                <th>Supermarket</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (safeRecentDeliveries.length === 0) { %>
+                <tr>
+                  <td colspan="5" class="text-center">No deliveries found.</td>
+                </tr>
+              <% } %>
+
+              <% safeRecentDeliveries.forEach((delivery) => { %>
+                <tr>
+                  <td><%= delivery._id %></td>
+                  <td><%= delivery.orderId && delivery.orderId._id ? delivery.orderId._id : '-' %></td>
+                  <td><%= delivery.orderId && delivery.orderId.clientUserId && delivery.orderId.clientUserId.name ? delivery.orderId.clientUserId.name : '-' %></td>
+                  <td><%= delivery.orderId && delivery.orderId.supermarketId && delivery.orderId.supermarketId.name ? delivery.orderId.supermarketId.name : '-' %></td>
+                  <td><span class="badge text-bg-secondary"><%= delivery.status %></span></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="courierStatusesData">
+  <%- JSON.stringify({
+    accepted: safeMyDeliveriesByStatus.accepted || 0,
+    picked_up: safeMyDeliveriesByStatus.picked_up || 0,
+    delivered: safeMyDeliveriesByStatus.delivered || 0,
+    available: safeMyDeliveriesByStatus.available || 0,
+  }) %>
+</script>
+
+<script type="application/json" id="courierTopSupermarketsData">
+  <%- JSON.stringify(
+    safeTopSupermarkets.map((item) => ({
+      supermarketName: item.supermarketName,
+      deliveries: Number(item.deliveries || 0),
+    }))
+  ) %>
+</script>
+
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="/javascripts/courier-google-charts.js"></script>
+
+<%- include('../partials/footer') %>

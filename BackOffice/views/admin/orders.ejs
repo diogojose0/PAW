@@ -1,0 +1,62 @@
+<%- include('../partials/header', { title: title }) %>
+
+<h1 class="mb-4">Orders</h1>
+
+<form method="GET" action="/admin/orders" class="row g-3 mb-4">
+  <div class="col-md-4">
+    <select class="form-select" name="status">
+      <option value="">All Statuses</option>
+      <% statuses.forEach((status) => { %>
+        <option value="<%= status %>" <%= selectedStatus === status ? 'selected' : '' %>>
+          <%= status %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="col-md-3 d-flex gap-2">
+    <button class="btn btn-primary w-100" type="submit">Filter</button>
+    <a href="/admin/orders" class="btn btn-secondary w-100">Clear</a>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Order</th>
+        <th>Supermarket</th>
+        <th>Client</th>
+        <th>Method</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!orders || orders.length === 0) { %>
+        <tr>
+          <td colspan="7" class="text-center">No orders found.</td>
+        </tr>
+      <% } %>
+
+      <% orders.forEach((order) => { %>
+        <tr>
+          <td><%= order._id %></td>
+          <td><%= order.supermarketId?.name || '-' %></td>
+          <td><%= order.clientUserId?.name || '-' %></td>
+          <td><%= order.deliveryMethod %></td>
+          <td><%= Number(order.finalTotal || 0).toFixed(2) %> €</td>
+          <td><span class="badge bg-dark"><%= order.status %></span></td>
+          <td>
+            <a href="/admin/orders/<%= order._id %>" class="btn btn-sm btn-primary">View</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<a href="/admin" class="btn btn-secondary">Back</a>
+
+<%- include('../partials/footer') %>

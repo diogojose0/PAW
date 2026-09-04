@@ -1,0 +1,148 @@
+<%- include('../partials/header', { title: title }) %>
+
+<h1 class="mb-4">Order Detail</h1>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <p class="mb-1"><strong>Order ID:</strong> <%= order._id %></p>
+    <p class="mb-1"><strong>Status:</strong> <%= order.status %></p>
+    <p class="mb-1"><strong>Delivery Method:</strong> <%= order.deliveryMethod %></p>
+    <p class="mb-1"><strong>Delivery Cost:</strong> <%= Number(order.deliveryCost || 0).toFixed(2) %> €</p>
+    <p class="mb-0"><strong>Final Total:</strong> <%= Number(order.finalTotal || 0).toFixed(2) %> €</p>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h4 class="mb-3">Client</h4>
+
+    <% if (order.clientUserId) { %>
+      <p class="mb-1"><strong>Name:</strong> <%= order.clientUserId.name %></p>
+      <p class="mb-1"><strong>Email:</strong> <%= order.clientUserId.email %></p>
+      <p class="mb-1"><strong>Phone:</strong> <%= order.clientUserId.phone %></p>
+      <p class="mb-0"><strong>Address:</strong> <%= order.clientUserId.address %></p>
+    <% } else { %>
+      <p class="mb-0 text-muted">Client not found.</p>
+    <% } %>
+  </div>
+</div>
+
+<% if (order.deliveryMethod === "courier") { %>
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h4 class="mb-3">Courier</h4>
+
+      <% if (delivery && delivery.courierUserId) { %>
+        <p class="mb-1"><strong>Name:</strong> <%= delivery.courierUserId.name %></p>
+        <p class="mb-1"><strong>Email:</strong> <%= delivery.courierUserId.email %></p>
+        <p class="mb-1"><strong>Phone:</strong> <%= delivery.courierUserId.phone || 'Not available' %></p>
+        <p class="mb-1"><strong>Address:</strong> <%= delivery.courierUserId.address || 'Not available' %></p>
+        <p class="mb-1"><strong>Delivery status:</strong> <%= delivery.status %></p>
+
+        <% if (delivery.acceptedAt) { %>
+          <p class="mb-1">
+            <strong>Accepted at:</strong>
+            <%= new Date(delivery.acceptedAt).toLocaleString('pt-PT') %>
+          </p>
+        <% } %>
+
+        <% if (delivery.deliveredAt) { %>
+          <p class="mb-0">
+            <strong>Delivered at:</strong>
+            <%= new Date(delivery.deliveredAt).toLocaleString('pt-PT') %>
+          </p>
+        <% } %>
+      <% } else { %>
+        <p class="mb-0 text-muted">
+          No courier has accepted this delivery yet.
+        </p>
+      <% } %>
+    </div>
+  </div>
+<% } %>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h4 class="mb-3">Items</h4>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% order.items.forEach((item) => { %>
+            <tr>
+              <td><%= item.nameSnapshot %></td>
+              <td><%= Number(item.priceSnapshot || 0).toFixed(2) %> €</td>
+              <td><%= item.quantity %></td>
+              <td><%= Number(item.subtotal || 0).toFixed(2) %> €</td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h4 class="mb-3">Actions</h4>
+
+    <div class="d-flex flex-wrap gap-2">
+      <% if (order.status === "pending") { %>
+        <form method="POST" action="/supermarket/orders/<%= order._id %>/status">
+          <input type="hidden" name="status" value="confirmed">
+          <button class="btn btn-primary" type="submit">Mark as confirmed</button>
+        </form>
+
+        <form method="POST" action="/supermarket/orders/<%= order._id %>/status">
+          <input type="hidden" name="status" value="cancelled">
+          <button class="btn btn-danger" type="submit">Cancel order</button>
+        </form>
+      <% } %>
+
+      <% if (order.status === "confirmed") { %>
+        <form method="POST" action="/supermarket/orders/<%= order._id %>/status">
+          <input type="hidden" name="status" value="preparing">
+          <button class="btn btn-primary" type="submit">Mark as preparing</button>
+        </form>
+
+        <form method="POST" action="/supermarket/orders/<%= order._id %>/status">
+          <input type="hidden" name="status" value="cancelled">
+          <button class="btn btn-danger" type="submit">Cancel order</button>
+        </form>
+      <% } %>
+
+      <% if (order.status === "preparing" && order.deliveryMethod === "pickup") { %>
+        <form method="POST" action="/supermarket/orders/<%= order._id %>/status">
+          <input type="hidden" name="status" value="delivered">
+          <button class="btn btn-success" type="submit">Mark as delivered</button>
+        </form>
+      <% } %>
+
+      <% if (order.deliveryMethod === "courier" && order.status === "preparing") { %>
+        <div class="alert alert-info mb-0">
+          Waiting for a courier to accept the delivery.
+        </div>
+      <% } %>
+
+      <% if (["delivering", "delivered", "cancelled"].includes(order.status)) { %>
+        <div class="alert alert-secondary mb-0">
+          No further manual actions available.
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex gap-2">
+  <a href="/supermarket/orders" class="btn btn-secondary">Back</a>
+</div>
+
+<%- include('../partials/footer') %>

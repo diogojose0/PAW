@@ -1,0 +1,64 @@
+<%- include('../partials/header', { title: title }) %>
+
+<h1 class="mb-4">Pending Supermarkets</h1>
+
+<% if (supermarkets.length === 0) { %>
+  <div class="alert alert-success">There are no pending supermarkets.</div>
+<% } else { %>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Location</th>
+          <th>Opening Hours</th>
+          <th>Owner</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% supermarkets.forEach((supermarket) => { %>
+          <tr>
+            <td><%= supermarket.name %></td>
+            <td><%= supermarket.description || "-" %></td>
+            <td><%= supermarket.location %></td>
+            <td><%= supermarket.openingHours %></td>
+            <td>
+              <% if (supermarket.ownerUserId) { %>
+                <strong><%= supermarket.ownerUserId.name %></strong><br>
+                <small><%= supermarket.ownerUserId.email %></small>
+              <% } else { %>
+                -
+              <% } %>
+            </td>
+            <td>
+              <div class="d-flex gap-2 align-items-center">
+                <form method="POST" action="/admin/supermarkets/<%= supermarket._id %>/approve" class="m-0">
+                  <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                </form>
+
+                <form method="POST" action="/admin/supermarkets/<%= supermarket._id %>/reject" class="m-0">
+                  <div class="mb-2">
+                    <textarea
+                      name="rejectionReason"
+                      class="form-control form-control-sm"
+                      rows="2"
+                      placeholder="Reason for rejection"
+                      required></textarea>
+                  </div>
+
+                  <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<a href="/admin" class="btn btn-secondary">Back</a>
+
+<%- include('../partials/footer') %>

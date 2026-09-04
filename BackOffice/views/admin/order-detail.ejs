@@ -1,0 +1,66 @@
+<%- include('../partials/header', { title: title }) %>
+
+<h1 class="mb-4">Order Detail</h1>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <p class="mb-1"><strong>Order ID:</strong> <%= order._id %></p>
+    <p class="mb-1"><strong>Status:</strong> <%= order.status %></p>
+    <p class="mb-1"><strong>Method:</strong> <%= order.deliveryMethod %></p>
+    <p class="mb-1"><strong>Items Total:</strong> <%= Number(order.itemsTotal || 0).toFixed(2) %> €</p>
+    <p class="mb-1"><strong>Delivery Cost:</strong> <%= Number(order.deliveryCost || 0).toFixed(2) %> €</p>
+    <p class="mb-0"><strong>Final Total:</strong> <%= Number(order.finalTotal || 0).toFixed(2) %> €</p>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h4 class="mb-3">Supermarket</h4>
+    <p class="mb-1"><strong>Name:</strong> <%= order.supermarketId?.name || '-' %></p>
+    <p class="mb-1"><strong>Location:</strong> <%= order.supermarketId?.location || '-' %></p>
+    <p class="mb-0"><strong>Opening Hours:</strong> <%= order.supermarketId?.openingHours || '-' %></p>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h4 class="mb-3">Client</h4>
+    <p class="mb-1"><strong>Name:</strong> <%= order.clientUserId?.name || '-' %></p>
+    <p class="mb-1"><strong>Email:</strong> <%= order.clientUserId?.email || '-' %></p>
+    <p class="mb-1"><strong>Phone:</strong> <%= order.clientUserId?.phone || '-' %></p>
+    <p class="mb-0"><strong>Address:</strong> <%= order.clientUserId?.address || '-' %></p>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h4 class="mb-3">Items</h4>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% order.items.forEach((item) => { %>
+            <tr>
+              <td><%= item.nameSnapshot %></td>
+              <td><%= Number(item.priceSnapshot || 0).toFixed(2) %> €</td>
+              <td><%= item.quantity %></td>
+              <td><%= Number(item.subtotal || 0).toFixed(2) %> €</td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<a href="/admin/orders" class="btn btn-secondary">Back</a>
+
+<%- include('../partials/footer') %>

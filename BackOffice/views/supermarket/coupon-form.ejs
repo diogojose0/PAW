@@ -1,0 +1,114 @@
+<%- include('../partials/header', { title: title }) %>
+
+<%- include('../error') %>
+
+<h1 class="mb-4">New Coupon</h1>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="POST" action="/supermarket/coupons/new" class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Code</label>
+        <input
+          class="form-control"
+          type="text"
+          name="code"
+          value="<%= coupon.code || '' %>"
+          placeholder="WELCOME10"
+          required>
+      </div>
+
+      <div class="col-md-8">
+        <label class="form-label">Name</label>
+        <input
+          class="form-control"
+          type="text"
+          name="name"
+          value="<%= coupon.name || '' %>"
+          placeholder="Welcome discount"
+          required>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Discount Type</label>
+        <select class="form-select" name="discountType" id="discountTypeSelect" required>
+          <option value="fixed" <%= coupon.discountType === 'fixed' ? 'selected' : '' %>>
+            Fixed amount
+          </option>
+          <option value="percent" <%= coupon.discountType === 'percent' ? 'selected' : '' %>>
+            Percentage
+          </option>
+          <option value="free_shipping" <%= coupon.discountType === 'free_shipping' ? 'selected' : '' %>>
+            Free shipping
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Discount Value</label>
+        <input
+          class="form-control"
+          type="number"
+          min="0"
+          step="0.01"
+          name="discountValue"
+          id="discountValueInput"
+          value="<%= coupon.discountValue ?? 0 %>"
+          required>
+        <div class="form-text" id="discountValueHelp">
+          For free shipping coupons, this value stays at 0.
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Minimum Order Value</label>
+        <input
+          class="form-control"
+          type="number"
+          min="0"
+          step="0.01"
+          name="minOrderValue"
+          value="<%= coupon.minOrderValue || 0 %>">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Valid From</label>
+        <input
+          class="form-control"
+          type="date"
+          name="validFrom"
+          value="<%= coupon.validFrom || '' %>">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Valid Until</label>
+        <input
+          class="form-control"
+          type="date"
+          name="validUntil"
+          value="<%= coupon.validUntil || '' %>">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Usage Limit</label>
+        <input
+          class="form-control"
+          type="number"
+          min="1"
+          step="1"
+          name="usageLimit"
+          value="<%= coupon.usageLimit || '' %>"
+          placeholder="Leave empty for unlimited">
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-success" type="submit">Create Coupon</button>
+        <a href="/supermarket/coupons" class="btn btn-secondary">Back</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/javascripts/coupon-form.js"></script>
+
+<%- include('../partials/footer') %>

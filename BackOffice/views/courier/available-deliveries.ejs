@@ -1,0 +1,56 @@
+<%- include('../partials/header', { title: title }) %>
+
+<h1 class="mb-4">Available Deliveries</h1>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Order</th>
+        <th>Supermarket</th>
+        <th>Location</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!deliveries || deliveries.length === 0) { %>
+        <tr>
+          <td colspan="6" class="text-center">No available deliveries.</td>
+        </tr>
+      <% } %>
+
+      <% deliveries.forEach((delivery) => { %>
+        <tr>
+          <td><%= delivery.orderId?._id || '-' %></td>
+          <td><%= delivery.orderId?.supermarketId?.name || '-' %></td>
+          <td><%= delivery.orderId?.supermarketId?.location || '-' %></td>
+          <td><%= Number(delivery.orderId?.finalTotal || 0).toFixed(2) %> €</td>
+          <td><span class="badge bg-secondary"><%= delivery.status %></span></td>
+          <td>
+            <div class="d-flex gap-2 flex-wrap">
+              <a
+                href="/courier/deliveries/available/<%= delivery._id %>"
+                class="btn btn-info btn-sm"
+              >
+                View Details
+              </a>
+
+              <form method="POST" action="/courier/deliveries/<%= delivery._id %>/accept">
+                <button type="submit" class="btn btn-success btn-sm">Accept</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<div class="d-flex gap-2">
+  <a href="/courier" class="btn btn-secondary">Back</a>
+  <a href="/courier/deliveries/my" class="btn btn-dark">My Deliveries</a>
+</div>
+
+<%- include('../partials/footer') %>

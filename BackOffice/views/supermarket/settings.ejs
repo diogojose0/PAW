@@ -1,0 +1,169 @@
+<%- include('../partials/header', { title: title }) %>
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+>
+
+<%- include('../error') %>
+
+<h1 class="mb-4">Supermarket Settings</h1>
+
+<% if (supermarket.approvalStatus === 'rejected') { %>
+  <div class="alert alert-danger">
+    <h5 class="alert-heading mb-2">Supermarket rejected</h5>
+
+    <p class="mb-2">
+      Your supermarket registration was rejected by the administrator.
+    </p>
+
+    <p class="mb-0">
+      <strong>Reason:</strong>
+      <%= supermarket.rejectionReason || 'No reason provided.' %>
+    </p>
+  </div>
+<% } else if (!supermarket.approvedByAdmin) { %>
+  <div class="alert alert-warning">
+    Your supermarket is pending admin approval.
+  </div>
+<% } %>
+
+<form method="POST" action="/supermarket/updateSettings" class="row g-3">
+  <div class="col-md-6">
+    <label class="form-label">Name</label>
+    <input class="form-control" name="name" value="<%= supermarket.name %>" required>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Opening Hours</label>
+    <input class="form-control" name="openingHours" value="<%= supermarket.openingHours %>" placeholder="09:00-19:00" required>
+  </div>
+
+  <div class="col-12">
+    <label class="form-label">Description</label>
+    <textarea class="form-control" name="description" rows="3"><%= supermarket.description || '' %></textarea>
+  </div>
+
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <label class="form-label mb-0">Location</label>
+      <button class="btn btn-outline-primary btn-sm" type="button" id="geocodeLocationBtn">
+        Find on map
+      </button>
+    </div>
+
+    <input
+      class="form-control mt-2"
+      id="locationInput"
+      name="location"
+      value="<%= supermarket.location %>"
+      placeholder="Street, city, country"
+      required
+    >
+
+    <div class="form-text">
+      Write the supermarket address and click <strong>Find on map</strong>. You can also click directly on the map to adjust the exact position.
+    </div>
+
+    <div class="mt-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <small class="text-muted">Map position</small>
+        <span id="mapStatusBadge" class="badge text-bg-secondary">
+          Loading map
+        </span>
+      </div>
+
+      <div
+        id="supermarketSettingsMap"
+        style="height: 350px; border-radius: 10px; overflow: hidden;"
+      ></div>
+    </div>
+
+    <input
+      type="hidden"
+      name="coordinates[lat]"
+      id="coordinatesLat"
+      value="<%= supermarket.coordinates?.lat ?? '' %>"
+    >
+    <input
+      type="hidden"
+      name="coordinates[lng]"
+      id="coordinatesLng"
+      value="<%= supermarket.coordinates?.lng ?? '' %>"
+    >
+  </div>
+
+  <div class="col-12">
+    <label class="form-label d-block">Delivery Methods</label>
+
+    <input type="hidden" name="deliveryMethods" value="pickup">
+    <input type="hidden" name="deliveryMethods" value="courier">
+
+    <div class="alert alert-info mb-0">
+      This supermarket always supports <strong>Pickup</strong> and <strong>Courier</strong>.
+      Pickup cost is fixed at <strong>0.00 €</strong>.
+    </div>
+  </div>
+
+  <div class="col-md-6" id="pickupField">
+    <label class="form-label">Pickup Cost</label>
+    <input
+      class="form-control"
+      type="number"
+      min="0"
+      step="0.01"
+      name="deliveryCosts[pickup]"
+      value="0"
+      readonly
+    >
+  </div>
+
+  <div class="col-md-6" id="courierField">
+    <label class="form-label">Courier Cost</label>
+    <input
+      class="form-control"
+      type="number"
+      min="0"
+      step="0.01"
+      name="deliveryCosts[courier]"
+      value="<%= supermarket.deliveryCosts?.courier || '' %>"
+      required
+    >
+  </div>
+
+  <div class="col-12 d-flex gap-2">
+    <button class="btn btn-success" type="submit" name="submitAction" value="save">
+      Save
+    </button>
+
+    <% if (supermarket.approvalStatus === 'rejected') { %>
+      <button class="btn btn-primary" type="submit" name="submitAction" value="resubmit">
+        Submit request
+      </button>
+    <% } %>
+
+    <a class="btn btn-secondary" href="/supermarket">Back</a>
+  </div>
+</form>
+
+<script type="application/json" id="supermarketMapData">
+  <%- JSON.stringify({
+    name: supermarket.name || "",
+    location: supermarket.location || "",
+    lat: supermarket.coordinates?.lat ?? null,
+    lng: supermarket.coordinates?.lng ?? null,
+  }) %>
+</script>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+<script src="/javascripts/supermarket-settings-map.js"></script>
+<script src="/javascripts/editproduct-script.js"></script>
+<script src="/javascripts/error-script.js"></script>
+
+<%- include('../partials/footer') %>

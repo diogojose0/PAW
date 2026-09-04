@@ -1,0 +1,74 @@
+<%- include('partials/header', { title: title }) %>
+
+<%- include('error') %>
+
+<div class="row align-items-center min-vh-75">
+  <div class="col-lg-7 mb-4">
+    <span class="badge bg-success mb-3 px-3 py-2">PAW Marketplace</span>
+
+    <h1 class="display-4 fw-bold mb-3">
+      Marketplace of <span class="text-primary">Local Supermarkets</span>
+    </h1>
+
+    <p class="lead text-muted mb-4">
+      Manage supermarkets, products, orders, and deliveries on a single platform.
+      A simple, modern back office ready to grow with you.
+    </p>
+
+    <% if (user) { %>
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+          <h4 class="mb-2">Welcome, <%= user.name %></h4>
+          <p class="text-muted mb-3">
+            You are authenticated as <strong><%= user.role %></strong>.
+          </p>
+
+          <div class="d-flex flex-wrap gap-2">
+            <% if (user.role === 'admin') { %>
+              <a href="/admin" class="btn btn-dark">Admin Section</a>
+            <% } %>
+
+            <% if (user.role === 'supermarket') { %>
+              <a href="/supermarket" class="btn btn-primary">Supermarket Section</a>
+            <% } %>
+
+            <% if (user.role === 'courier') { %>
+              <a href="/courier" class="btn btn-warning">Courier Section</a>
+            <% } %>
+
+            <a href="/auth/logout" class="btn btn-outline-danger">Logout</a>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="d-flex flex-wrap gap-3">
+        <a href="/auth/login" class="btn btn-primary btn-lg px-4">Login</a>
+        <a href="/auth/register" class="btn btn-outline-dark btn-lg px-4">Create Account</a>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+      <div class="card-body p-4 p-md-5 bg-light">
+        <h3 class="fw-bold mb-4">What can be done?</h3>
+
+        <div class="d-grid gap-3">
+          <div class="p-3 bg-white rounded-3 shadow-sm">
+            <h5 class="mb-1">Supermarkets</h5>
+            <p class="text-muted mb-0">Manage products, prices, stock, and orders.</p>
+          </div>
+
+          <div class="p-3 bg-white rounded-3 shadow-sm">
+            <h5 class="mb-1">Couriers</h5>
+            <p class="text-muted mb-0">Accept deliveries and track their status.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/javascripts/error-script.js"></script>
+
+<%- include('partials/footer') %>

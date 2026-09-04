@@ -1,0 +1,44 @@
+<%- include('../partials/header', { title: title }) %>
+
+<h1 class="mb-4">Users</h1>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Active</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach((user) => { %>
+        <tr>
+          <td><%= user.name %></td>
+          <td><%= user.email %></td>
+          <td><%= user.role %></td>
+          <td>
+            <% if (user.active) { %>
+              <span class="badge bg-success">Yes</span>
+            <% } else { %>
+              <span class="badge bg-danger">No</span>
+            <% } %>
+          </td>
+          <td>
+            <form method="POST" action="/admin/users/<%= user._id %>/toggle-active">
+              <button type="submit" class="btn btn-sm <%= user.active ? 'btn-danger' : 'btn-success' %>">
+                <%= user.active ? 'Disable' : 'Enable' %>
+              </button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<a href="/admin" class="btn btn-secondary">Back</a>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,338 @@
+<%- include('../partials/header', { title: title }) %>
+
+<%
+  const safeStats = stats || {};
+  const safeOrdersByStatus = ordersByStatus || {};
+  const safeTopProducts = Array.isArray(topProducts) ? topProducts : [];
+  const safeRecentOrders = Array.isArray(recentOrders) ? recentOrders : [];
+  const safeRecentReviews = Array.isArray(recentReviews) ? recentReviews : [];
+  const safeReviewStats = reviewStats || { averageRating: 0, reviewCount: 0 };
+%>
+
+<div class="row g-4 align-items-start">
+  <div class="col-lg-3">
+    <%- include('../partials/dashboard-sidebar', {
+      sidebarTitle: 'Supermarket Panel',
+      sidebarLinks: [
+        { label: 'Dashboard', href: '/supermarket' },
+        { label: 'Edit Supermarket', href: '/supermarket/settings' },
+        { label: 'Manage Products', href: '/supermarket/products' },
+        { label: 'Manage Orders', href: '/supermarket/orders' },
+        { label: 'Manage Coupons', href: '/supermarket/coupons' },
+        { label: 'New Sale', href: '/supermarket/sales/new', disabled: !supermarket.approvedByAdmin }
+      ]
+    }) %>
+  </div>
+
+  <div class="col-lg-9">
+    <h1 class="mb-4">Supermarket Dashboard</h1>
+
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <h5><%= supermarket.name %></h5>
+        <p class="mb-1"><strong>Location:</strong> <%= supermarket.location %></p>
+        <p class="mb-1"><strong>Opening Hours:</strong> <%= supermarket.openingHours %></p>
+        <p class="mb-1">
+          <strong>Status:</strong>
+          <%= supermarket.approvalStatus || (supermarket.approvedByAdmin ? 'approved' : 'pending') %>
+        </p>
+
+        <p class="mb-0">
+          <strong>Approved:</strong> <%= supermarket.approvedByAdmin ? 'Yes' : 'No' %>
+        </p>
+      </div>
+    </div>
+
+      <% if (supermarket.approvalStatus === 'rejected') { %>
+        <div class="alert alert-danger">
+          <h5 class="alert-heading mb-2">Supermarket rejected</h5>
+
+          <p class="mb-2">
+            Your supermarket registration was rejected by the administrator.
+          </p>
+
+          <p class="mb-0">
+            <strong>Reason:</strong>
+            <%= supermarket.rejectionReason || 'No reason provided.' %>
+          </p>
+        </div>
+      <% } else if (!supermarket.approvedByAdmin) { %>
+        <div class="alert alert-warning">
+          Your supermarket is pending admin approval. You can manage settings and products, but sales are not available yet.
+        </div>
+      <% } %>
+
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5>Total Products</h5>
+            <p class="display-6"><%= safeStats.productsCount || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5>Active Products</h5>
+            <p class="display-6"><%= safeStats.activeProductsCount || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5>Total Orders</h5>
+            <p class="display-6"><%= safeStats.ordersCount || 0 %></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm border-success">
+          <div class="card-body">
+            <h5>Revenue</h5>
+            <p class="display-6"><%= Number(safeStats.deliveredRevenue || 0).toFixed(2) %> €</p>
+            <small class="text-muted">Delivered orders: <%= safeStats.deliveredOrdersCount || 0 %></small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-4 border-warning">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <div>
+            <h5 class="mb-1">Customer rating</h5>
+            <p class="text-muted mb-0">
+              Average supermarket rating from delivered order reviews.
+            </p>
+          </div>
+
+          <div class="text-end">
+            <% if (safeReviewStats.reviewCount > 0) { %>
+              <div class="display-6 fw-bold text-warning">
+                <%= Number(safeReviewStats.averageRating || 0).toFixed(1) %>/5
+              </div>
+              <small class="text-muted">
+                <%= safeReviewStats.reviewCount %> review(s)
+              </small>
+            <% } else { %>
+              <div class="fs-5 text-muted">No reviews yet</div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-4">
+      <div class="card-body">
+        <h5 class="mb-3">Latest supermarket reviews</h5>
+
+        <% if (safeRecentReviews.length === 0) { %>
+          <p class="text-muted mb-0">No reviews received yet.</p>
+        <% } %>
+
+        <% safeRecentReviews.forEach((review) => { %>
+          <div class="border-bottom pb-3 mb-3">
+            <div class="d-flex justify-content-between gap-3">
+              <div>
+                <strong>
+                  <%= review.clientUserId && review.clientUserId.name ? review.clientUserId.name : 'Client' %>
+                </strong>
+
+                <div class="text-warning small">
+                  <%= '★'.repeat(review.supermarketRating || 0) %><%= '☆'.repeat(5 - (review.supermarketRating || 0)) %>
+                </div>
+              </div>
+
+              <small class="text-muted">
+                <%= review.createdAt ? new Date(review.createdAt).toLocaleDateString('pt-PT') : '-' %>
+              </small>
+            </div>
+
+            <% if (review.supermarketComment) { %>
+              <p class="text-muted mb-0 mt-2">
+                <%= review.supermarketComment %>
+              </p>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="mb-3">Orders by status</h5>
+
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="border rounded p-3">
+                  <div class="text-muted small">Pending</div>
+                  <div class="fs-4 fw-bold"><%= safeOrdersByStatus.pending || 0 %></div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="border rounded p-3">
+                  <div class="text-muted small">Confirmed</div>
+                  <div class="fs-4 fw-bold"><%= safeOrdersByStatus.confirmed || 0 %></div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="border rounded p-3">
+                  <div class="text-muted small">Preparing</div>
+                  <div class="fs-4 fw-bold"><%= safeOrdersByStatus.preparing || 0 %></div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="border rounded p-3">
+                  <div class="text-muted small">Delivering</div>
+                  <div class="fs-4 fw-bold"><%= safeOrdersByStatus.delivering || 0 %></div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="border rounded p-3 bg-light">
+                  <div class="text-muted small">Delivered</div>
+                  <div class="fs-4 fw-bold text-success"><%= safeOrdersByStatus.delivered || 0 %></div>
+                </div>
+              </div>
+
+              <div class="col-6">
+                <div class="border rounded p-3 bg-light">
+                  <div class="text-muted small">Cancelled</div>
+                  <div class="fs-4 fw-bold text-danger"><%= safeOrdersByStatus.cancelled || 0 %></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="mb-3">Top selling products</h5>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Units Sold</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (safeTopProducts.length === 0) { %>
+                    <tr>
+                      <td colspan="3" class="text-center">No delivered sales yet.</td>
+                    </tr>
+                  <% } %>
+
+                  <% safeTopProducts.forEach((product) => { %>
+                    <tr>
+                      <td><%= product.name %></td>
+                      <td><%= product.quantitySold %></td>
+                      <td><%= Number(product.revenue || 0).toFixed(2) %> €</td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-1">
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="mb-3">Orders by status chart</h5>
+            <div id="supermarketOrdersStatusChart" style="height: 320px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="mb-3">Top products chart</h5>
+            <div id="supermarketTopProductsChart" style="height: 320px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-4">
+      <div class="card-body">
+        <h5 class="mb-3">Recent orders</h5>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Client</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (safeRecentOrders.length === 0) { %>
+                <tr>
+                  <td colspan="5" class="text-center">No orders found.</td>
+                </tr>
+              <% } %>
+
+              <% safeRecentOrders.forEach((order) => { %>
+                <tr>
+                  <td><%= order._id %></td>
+                  <td><%= order.clientUserId && order.clientUserId.name ? order.clientUserId.name : '-' %></td>
+                  <td><span class="badge text-bg-secondary"><%= order.status %></span></td>
+                  <td><%= Number(order.finalTotal || 0).toFixed(2) %> €</td>
+                  <td><%= order.createdAt ? new Date(order.createdAt).toLocaleString('pt-PT') : '-' %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="supermarketOrdersByStatusData">
+  <%- JSON.stringify({
+    pending: safeOrdersByStatus.pending || 0,
+    confirmed: safeOrdersByStatus.confirmed || 0,
+    preparing: safeOrdersByStatus.preparing || 0,
+    delivering: safeOrdersByStatus.delivering || 0,
+    delivered: safeOrdersByStatus.delivered || 0,
+    cancelled: safeOrdersByStatus.cancelled || 0,
+  }) %>
+</script>
+
+<script type="application/json" id="supermarketTopProductsData">
+  <%- JSON.stringify(
+    safeTopProducts.map((product) => ({
+      name: product.name,
+      quantitySold: Number(product.quantitySold || 0),
+      revenue: Number(product.revenue || 0),
+    }))
+  ) %>
+</script>
+
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="/javascripts/supermarket-google-charts.js"></script>
+
+<%- include('../partials/footer') %>

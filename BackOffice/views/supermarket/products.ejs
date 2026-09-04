@@ -1,0 +1,159 @@
+<%- include('../partials/header', { title: title }) %>
+
+<h1 class="mb-4">Products</h1>
+
+<% if (supermarket.approvalStatus === 'rejected') { %>
+    <div class="alert alert-danger">
+      <h5 class="alert-heading mb-2">Supermarket rejected</h5>
+
+      <p class="mb-2">
+        Your supermarket registration was rejected by the administrator.
+      </p>
+
+      <p class="mb-0">
+        <strong>Reason:</strong>
+        <%= supermarket.rejectionReason || 'No reason provided.' %>
+      </p>
+    </div>
+  <% } else if (!supermarket.approvedByAdmin) { %>
+    <div class="alert alert-warning">
+      Your supermarket is pending admin approval. You can manage products, but sales are not available yet.
+    </div>
+<% } %>
+
+<form method="GET" action="/supermarket/products" class="row g-3 mb-4">
+  <div class="col-md-5">
+    <input
+      class="form-control"
+      type="text"
+      name="search"
+      placeholder="Search by name"
+      value="<%= search %>"
+    >
+  </div>
+
+  <div class="col-md-4">
+    <select class="form-select" name="category">
+      <option value="">All Categories</option>
+      <% categories.forEach((cat) => { %>
+        <option
+          value="<%= cat._id %>"
+          <%= category === String(cat._id) ? 'selected' : '' %>
+        >
+          <%= cat.name %><%= cat.active === false ? ' (inactive)' : '' %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="col-md-3 d-flex gap-2">
+    <button class="btn btn-primary w-100" type="submit">Search</button>
+    <a href="/supermarket/products/new" class="btn btn-success w-100">New</a>
+
+    <% if (supermarket.approvedByAdmin) { %>
+      <a href="/supermarket/sales/new" class="btn btn-warning w-100">New Sale</a>
+    <% } else { %>
+      <button class="btn btn-warning w-100" type="button" disabled>New Sale</button>
+    <% } %>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Photo</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Active</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (products.length === 0) { %>
+        <tr>
+          <td colspan="7" class="text-center">No products found.</td>
+        </tr>
+      <% } %>
+
+      <% products.forEach((product) => { %>
+        <tr>
+          <td style="width: 110px;">
+            <% if (product.imageUrl) { %>
+              <img
+                src="<%= product.imageUrl %>"
+                alt="<%= product.name %>"
+                style="width: 72px; height: 72px; object-fit: cover; border-radius: 10px;"
+                class="shadow-sm"
+              >
+            <% } else { %>
+              <span class="badge bg-secondary">No photo</span>
+            <% } %>
+          </td>
+          <td><%= product.name %></td>
+          <td><%= product.categoryId?.name || 'No category' %></td>
+          <td><%= Number(product.price).toFixed(2) %> €</td>
+          <td><%= product.stock %></td>
+          <td>
+            <span class="badge <%= product.active ? 'bg-success' : 'bg-danger' %>">
+              <%= product.active ? 'Yes' : 'No' %>
+            </span>
+          </td>
+          <td>
+            <div class="d-flex gap-2 flex-wrap mb-2">
+              <a
+                href="/supermarket/products/<%= product._id %>/edit"
+                class="btn btn-sm btn-warning"
+              >
+                Edit
+              </a>
+
+              <form method="POST" action="/supermarket/products/<%= product._id %>/toggle-active">
+                <button
+                  class="btn btn-sm <%= product.active ? 'btn-danger' : 'btn-success' %>"
+                  type="submit"
+                >
+                  <%= product.active ? 'Disable' : 'Enable' %>
+                </button>
+              </form>
+            </div>
+
+            <form
+              method="POST"
+              action="/supermarket/products/<%= product._id %>/add-to-sale"
+              class="d-flex gap-2 flex-wrap align-items-center"
+            >
+              <input type="hidden" name="search" value="<%= search %>">
+              <input type="hidden" name="category" value="<%= category %>">
+
+              <input
+                class="form-control form-control-sm"
+                type="number"
+                name="quantity"
+                value="1"
+                min="1"
+                max="<%= product.stock %>"
+                style="width: 90px;"
+                <%= (!supermarket.approvedByAdmin || !product.active || product.stock < 1) ? 'disabled' : '' %>
+              >
+
+              <button
+                class="btn btn-sm btn-primary"
+                type="submit"
+                <%= (!supermarket.approvedByAdmin || !product.active || product.stock < 1) ? 'disabled' : '' %>
+              >
+                Add to Sale Cart
+              </button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<a href="/supermarket" class="btn btn-secondary">Back</a>
+
+<%- include('../partials/footer') %>
